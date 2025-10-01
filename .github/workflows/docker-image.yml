@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug username
+        run: echo "Docker username is: ${{ secrets.DOCKER_HUB_USERNAME }}"
+
         # Checkout source code
       - name: Checkout repository
         uses: actions/checkout@v4
