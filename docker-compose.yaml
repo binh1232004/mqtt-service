@@ -1,0 +1,43 @@
+services:
+  mqtt-service:
+    container_name: mqtt-service
+    image: mqtt-service:latest
+    environment:
+      - MQTT_BROKER=${MQTT_BROKER:-localhost}
+      - MQTT_PORT=${MQTT_PORT:-1883}
+      - MQTT_TOPIC=${MQTT_TOPIC:-sensors/data}
+      - MQTT_USERNAME=${MQTT_USERNAME:-user}
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-password}
+      - DB_HOST=${DB_HOST:-database}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-mydb}
+      - DB_USER=${DB_USER:-user}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+    depends_on:
+      - mqtt
+      - database
+    ports:
+      - "5000:5000"
+
+  mqtt:
+    container_name: mqtt
+    image: eclipse-mosquitto:latest
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+
+  database:
+    container_name: database
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${DB_USER:-user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-mydb}
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data: 
