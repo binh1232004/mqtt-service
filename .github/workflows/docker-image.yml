@@ -1,0 +1,33 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "latest" ]
+  pull_request:
+    branches: [ "latest" ]
+
+env:
+  IMAGE_NAME: mqtt-service
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+        # Checkout source code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+        # Login vào Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+        # Build và push image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
