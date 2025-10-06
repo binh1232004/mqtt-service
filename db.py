@@ -1,6 +1,7 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import config
+import json
 
 def get_db_connection():
     try:
@@ -25,7 +26,10 @@ def init_db():
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS sensors (
                     sensor_id SERIAL PRIMARY KEY,
-                    name VARCHAR(50) UNIQUE
+                    name VARCHAR(50) UNIQUE,
+                    vbat DOUBLE PRECISION,
+                    created_at TIMESTAMPTZ DEFAULT NOW(),
+                    updated_at TIMESTAMPTZ DEFAULT NOW()
                 );
             """)
             cursor.execute("""
@@ -64,12 +68,24 @@ def save_message(topic, payload):
             else:
                 sensor_id = result[0]
 
-            type, value = payload.split(' ')[0], payload.split(' ')[1]
-
-            cursor.execute(
-                "INSERT INTO values (sensor_id, type, value) VALUES (%s, %s, %s);",
-                (sensor_id, type, float(value))
-            )
+            try:
+                data = json.loads(payload)
+                
+                if 'vbat' in data:
+                    vbat_value = data.pop('vbat')
+                    cursor.execute(
+                        "UPDATE sensors SET vbat = %s, updated_at = NOW() WHERE sensor_id = %s;",
+                        (float(vbat_value), sensor_id)
+                    )
+                
+                for sensor_type, sensor_value in data.items():
+                    cursor.execute(
+                        "INSERT INTO values (sensor_id, type, value) VALUES (%s, %s, %s);",
+                        (sensor_id, sensor_type, float(sensor_value))
+                    )
+            except Exception as e:
+                print(f"Error parsing payload: {e}")
+                return
             connection.commit()
     except Exception as e:
         print(f"Error saving message to the database: {e}")
