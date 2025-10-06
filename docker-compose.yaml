@@ -1,7 +1,7 @@
 services:
   mqtt-service:
     container_name: mqtt-service
-    image: ngduyd/mqtt-service:latest
+    image: docker.io/ngduyd/mqtt-service:latest
     environment:
       - MQTT_BROKER=${MQTT_BROKER:-localhost}
       - MQTT_PORT=${MQTT_PORT:-1883}
@@ -21,7 +21,7 @@ services:
 
   mqtt:
     container_name: mqtt
-    image: eclipse-mosquitto:2.0.22
+    image: docker.io/eclipse-mosquitto:2.0.22
     ports:
       - "1883:1883"
     volumes:
@@ -29,7 +29,7 @@ services:
 
   database:
     container_name: database
-    image: postgres:latest
+    image: docker.io/postgres:latest
     environment:
       POSTGRES_USER: ${DB_USER:-user}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
