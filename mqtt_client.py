@@ -1,6 +1,6 @@
 import paho.mqtt.client as mqtt
 import config
-from db import save_message
+from db import save_message, update_sensor_status
 
 # Callback when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -12,8 +12,11 @@ def on_connect(client, userdata, flags, rc):
 
 # Callback when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    print(f"Topic: {msg.topic}\nMessage: {msg.payload.decode()}")
-    save_message(msg.topic, msg.payload.decode())
+    # print(f"Topic: {msg.topic}\nMessage: {msg.payload.decode()}")
+    if(msg.topic.endswith("/cmd")):
+        update_sensor_status(msg.topic.rsplit('/', 1)[0], msg.payload.decode().lower())
+    else:
+        save_message(msg.topic, msg.payload.decode())
 
 def create_mqtt_client():
     client = mqtt.Client()

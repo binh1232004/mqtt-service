@@ -28,6 +28,7 @@ def init_db():
                     sensor_id SERIAL PRIMARY KEY,
                     name VARCHAR(50) UNIQUE,
                     vbat DOUBLE PRECISION,
+                    status VARCHAR(20),
                     created_at TIMESTAMPTZ DEFAULT NOW(),
                     updated_at TIMESTAMPTZ DEFAULT NOW()
                 );
@@ -89,5 +90,21 @@ def save_message(topic, payload):
             connection.commit()
     except Exception as e:
         print(f"Error saving message to the database: {e}")
+    finally:
+        connection.close()
+
+def update_sensor_status(sensor_name, status):
+    connection = get_db_connection()
+    if connection is None:
+        return
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE sensors SET status = %s, updated_at = NOW() WHERE name = %s;",
+                (status, sensor_name)
+            )
+            connection.commit()
+    except Exception as e:
+        print(f"Error updating sensor status: {e}")
     finally:
         connection.close()
