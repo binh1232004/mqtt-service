@@ -29,8 +29,8 @@ def init_db():
                     name VARCHAR(50) UNIQUE,
                     vbat DOUBLE PRECISION,
                     status VARCHAR(20),
-                    created_at TIMESTAMPTZ DEFAULT NOW(),
-                    updated_at TIMESTAMPTZ DEFAULT NOW()
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
             """)
             cursor.execute("""
@@ -39,7 +39,7 @@ def init_db():
                     sensor_id INT REFERENCES sensors(sensor_id),
                     type VARCHAR(20),
                     value DOUBLE PRECISION,
-                    created_at TIMESTAMPTZ DEFAULT NOW()
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
             """)
             cursor.execute("""
@@ -64,7 +64,10 @@ def save_message(topic, payload):
             result = cursor.fetchone()
 
             if result is None:
-                cursor.execute("INSERT INTO sensors (name) VALUES (%s) RETURNING sensor_id;", (topic,))
+                cursor.execute(
+                    "INSERT INTO sensors (name, status) VALUES (%s, %s) RETURNING sensor_id;",
+                    (topic, 'online')
+                )
                 sensor_id = cursor.fetchone()[0]
             else:
                 sensor_id = result[0]
