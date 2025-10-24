@@ -78,9 +78,9 @@ def save_message(topic, payload):
                 if 'vbat' in data:
                     vbat_value = data.pop('vbat')
                     cursor.execute(
-                        "UPDATE sensors SET vbat = %s, updated_at = NOW() WHERE sensor_id = %s;",
-                        (float(vbat_value), sensor_id)
-                    )
+                            "UPDATE sensors SET vbat = %s, status = %s, updated_at = NOW() WHERE sensor_id = %s;",
+                            (float(vbat_value), "online", sensor_id)
+                        )
                 
                 for sensor_type, sensor_value in data.items():
                     cursor.execute(
