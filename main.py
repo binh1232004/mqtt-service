@@ -6,6 +6,7 @@ import manager
 
 SENSOR_OFFLINE_TIMEOUT = 120
 
+
 def main():
     time.sleep(5)
     try:
@@ -31,6 +32,7 @@ def main():
     finally:
         client.loop_stop()
         client.disconnect()
+
 
 if __name__ == "__main__":
     main()
