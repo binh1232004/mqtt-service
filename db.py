@@ -3,6 +3,7 @@ from psycopg2.extras import RealDictCursor
 import config
 import json
 
+
 def get_db_connection():
     """
     Establishes and returns a connection to the PostgreSQL database.
@@ -18,13 +19,14 @@ def get_db_connection():
             port=config.DB_PORT,
             database=config.DB_NAME,
             user=config.DB_USER,
-            password=config.DB_PASSWORD
+            password=config.DB_PASSWORD,
         )
         return connection
     except Exception as e:
         print(f"Error connecting to the database: {e}")
         return None
-    
+
+
 def init_db():
     """
     Initializes the database by creating the necessary tables.
@@ -37,7 +39,8 @@ def init_db():
         return
     try:
         with connection.cursor() as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS sensors (
                     sensor_id SERIAL PRIMARY KEY,
                     name VARCHAR(50) UNIQUE,
@@ -46,8 +49,10 @@ def init_db():
                     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
-            """)
-            cursor.execute("""
+            """
+            )
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS values (
                     id BIGSERIAL PRIMARY KEY,
                     sensor_id INT REFERENCES sensors(sensor_id),
@@ -55,18 +60,24 @@ def init_db():
                     value DOUBLE PRECISION,
                     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
-            """)
-            cursor.execute("""
+            """
+            )
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_type_time ON values(type, created_at);
-            """)
-            cursor.execute("""
+            """
+            )
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_sensor_value ON values(sensor_id, value);
-            """)
+            """
+            )
             connection.commit()
     except Exception as e:
         print(f"Error initializing the database: {e}")
     finally:
         connection.close()
+
 
 def save_message(topic, payload):
     """
@@ -92,7 +103,7 @@ def save_message(topic, payload):
             if result is None:
                 cursor.execute(
                     "INSERT INTO sensors (name, status) VALUES (%s, %s) RETURNING sensor_id;",
-                    (topic, 'offline')
+                    (topic, "offline"),
                 )
                 sensor_id = cursor.fetchone()[0]
             else:
@@ -100,18 +111,18 @@ def save_message(topic, payload):
 
             try:
                 data = json.loads(payload)
-                
-                if 'vbat' in data:
-                    vbat_value = data.pop('vbat')
+
+                if "vbat" in data:
+                    vbat_value = data.pop("vbat")
                     cursor.execute(
-                            "UPDATE sensors SET vbat = %s, updated_at = NOW() WHERE sensor_id = %s;",
-                            (float(vbat_value), sensor_id)
-                        )
-                
+                        "UPDATE sensors SET vbat = %s, updated_at = NOW() WHERE sensor_id = %s;",
+                        (float(vbat_value), sensor_id),
+                    )
+
                 for sensor_type, sensor_value in data.items():
                     cursor.execute(
                         "INSERT INTO values (sensor_id, type, value) VALUES (%s, %s, %s);",
-                        (sensor_id, sensor_type, float(sensor_value))
+                        (sensor_id, sensor_type, float(sensor_value)),
                     )
             except Exception as e:
                 print(f"Error parsing payload: {e}")
@@ -121,6 +132,7 @@ def save_message(topic, payload):
         print(f"Error saving message to the database: {e}")
     finally:
         connection.close()
+
 
 def update_sensor_status(sensor_name, status):
     """
@@ -137,7 +149,7 @@ def update_sensor_status(sensor_name, status):
         with connection.cursor() as cursor:
             cursor.execute(
                 "UPDATE sensors SET status = %s, updated_at = NOW() WHERE name = %s;",
-                (status, sensor_name)
+                (status, sensor_name),
             )
             connection.commit()
     except Exception as e:
@@ -145,7 +157,8 @@ def update_sensor_status(sensor_name, status):
     finally:
         connection.close()
 
-def get_all_sensor_status()-> dict:
+
+def get_all_sensor_status() -> dict:
     """
     Retrieves the status of all sensors from the database.
 
@@ -156,7 +169,7 @@ def get_all_sensor_status()-> dict:
     connection = get_db_connection()
     if connection is None:
         return {}
-    
+
     status = {}
 
     try:
@@ -164,7 +177,7 @@ def get_all_sensor_status()-> dict:
             cursor.execute("SELECT name, status FROM sensors;")
             result = cursor.fetchall()
             for row in result:
-                status[row['name']] = row['status']
+                status[row["name"]] = row["status"]
     except Exception as e:
         print(f"Error getting sensor status: {e}")
     finally:

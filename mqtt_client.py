@@ -3,6 +3,7 @@ import config
 from db import save_message, update_sensor_status
 import manager
 
+
 def on_connect(client, userdata, flags, rc):
     """
     Callback function for when the client connects to the MQTT broker.
@@ -22,6 +23,7 @@ def on_connect(client, userdata, flags, rc):
     else:
         print(f"Connection failed with code {rc}")
 
+
 def on_message(client, userdata, msg):
     """
     Callback function for when a PUBLISH message is received from the server.
@@ -37,14 +39,17 @@ def on_message(client, userdata, msg):
         msg: An instance of MQTTMessage. This is a class with members topic, payload, qos, retain.
     """
     # print(f"Topic: {msg.topic}\nMessage: {msg.payload.decode()}")
-    if(msg.topic.endswith("/cmd")):
-        update_sensor_status(msg.topic.rsplit('/', 1)[0], msg.payload.decode().lower())
-        manager.sensor_status[msg.topic.rsplit('/', 1)[0]] = msg.payload.decode().lower()
+    if msg.topic.endswith("/cmd"):
+        update_sensor_status(msg.topic.rsplit("/", 1)[0], msg.payload.decode().lower())
+        manager.sensor_status[msg.topic.rsplit("/", 1)[0]] = (
+            msg.payload.decode().lower()
+        )
     else:
-        sensor_name = msg.topic.rsplit('/', 1)[0]
+        sensor_name = msg.topic.rsplit("/", 1)[0]
         payload = msg.payload.decode()
         manager.record_sensor_activity(sensor_name)
         save_message(sensor_name, payload)
+
 
 def create_mqtt_client():
     """
