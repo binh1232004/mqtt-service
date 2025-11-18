@@ -1,0 +1,23 @@
+name: Code Formatting
+
+on:
+  push:
+    branches: [ "development" ]
+  pull_request:
+    branches: [ "development" ]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Format code with Black
+        uses: psf/black@stable
+        with:
+          options: "--check --verbose --diff"
+          src: "."
