@@ -28,6 +28,7 @@ We use a three-tier branching model:
 - **`staging`** - Pre-production testing environment
 - **`development`** - Active development branch
 - **`feature/*`** - Individual feature branches
+- **`fix/*`** - Individual feature branches
 
 ## Development Workflow
 
@@ -57,7 +58,6 @@ We use a three-tier branching model:
 
 - Features: `feature/feature-name` (e.g., `feature/user-authentication`)
 - Bug fixes: `fix/bug-description` (e.g., `fix/login-error`)
-- Hotfixes: `hotfix/issue-description` (e.g., `hotfix/security-patch`)
 
 ## Pull Request Process
 
